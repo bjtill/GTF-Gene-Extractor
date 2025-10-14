@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTF Gene Extractor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1f618d;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+           
+           
+    	color: #1f618d;
+    	margin-bottom: 10px;
+    	font-size: 2em;
+    	display: flex;
+    	align-items: center;
+    	gap: 12px;
+	}
+
+	.dna-icon {
+    	width: 40px;
+    	height: 40px;
+    	flex-shrink: 0;
+	}
+           
+        
+        .subtitle {
+            color: #1f618d;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .upload-section:hover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        
+        .upload-section h3 {
+            color: #1f618d;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 12px 20px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .file-input-label:hover {
+            background: #1f618d;
+            color: white;
+            border-color: #1f618d;
+        }
+        
+        .file-name {
+            margin-top: 10px;
+            color: #28a745;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .process-btn {
+            width: 100%;
+            padding: 15px;
+            background: #1f618d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        .process-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .process-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.processing {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .download-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 10px 10px 0;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .log-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #1f618d;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .info-box h4 {
+            color: #1f618d;
+            margin-bottom: 8px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+        }
+        
+        .info-box li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+      <h1>
+    <svg class="dna-icon" viewBox="0 0 640 640" fill="#1f618d" xmlns="http://www.w3.org/2000/svg">
+        <path d="M480 64C497.7 64 512 78.3 512 96C512 153.8 487.6 200.8 454.6 240.5C430.5 269.4 400.8 295.6 371 320C400.8 344.5 430.5 370.6 454.6 399.5C487.6 439.1 512 486.2 512 544C512 561.7 497.7 576 480 576C462.3 576 448 561.7 448 544L192 544C192 561.7 177.7 576 160 576C142.3 576 128 561.7 128 544C128 486.2 152.4 439.2 185.4 399.5C209.5 370.6 239.2 344.5 269 320C239.2 295.5 209.5 269.4 185.4 240.5C152.4 200.8 128 153.8 128 96C128 78.3 142.3 64 160 64C177.7 64 192 78.3 192 96L448 96C448 78.3 462.3 64 480 64zM411.5 448L228.6 448C220.4 458.5 213.5 469.1 208 480L432.2 480C426.6 469.1 419.7 458.5 411.6 448zM366 400C351.7 387 336.2 374.2 320 361C303.8 374.1 288.3 387 274 400L366 400zM228.5 192L411.4 192C419.6 181.5 426.5 170.9 432 160L207.9 160C213.5 170.9 220.4 181.5 228.5 192zM274 240C288.3 253 303.8 265.8 320 279C336.2 265.9 351.7 253 366 240L274 240z"/>
+    </svg>
+    GTF Gene Extractor
+</h1>
+
+        <p class="subtitle">Create BED files from GTF annotations and gene lists. </p>
+        
+        <div class="info-box">
+            <h4>How to use:</h4>
+            <ul>
+                <li>Upload your GTF annotation file (e.g., gencode.v45.annotation.gtf)</li>
+                <li>Upload a text file with gene names (one per line)</li>
+                <li>Click "Extract Genes" to process</li>
+                <li>Download the resulting BED file and log</li>
+                <li> For more information, visit <a href="https://github.com/bjtill/GTF-Gene-Extractor/" style="color:#1f618d" 						target="_blank">this page</a>
+             
+            </ul>
+        </div>
+        
+        <div class="upload-section">
+            <h3>📄 GTF Annotation File</h3>
+            <div class="file-input-wrapper">
+                <input type="file" id="gtfFile" accept=".gtf,.gtf.gz,.gff,.gff3">
+                <label for="gtfFile" class="file-input-label">Choose GTF File</label>
+            </div>
+            <div id="gtfFileName" class="file-name"></div>
+        </div>
+        
+        <div class="upload-section">
+            <h3>📋 Gene List File</h3>
+            <div class="file-input-wrapper">
+                <input type="file" id="geneListFile" accept=".txt,.csv">
+                <label for="geneListFile" class="file-input-label">Choose Gene List</label>
+            </div>
+            <div id="geneListFileName" class="file-name"></div>
+        </div>
+        
+        <button class="process-btn" id="processBtn" disabled>Extract Genes</button>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="results" id="results">
+            <h3>Results</h3>
+            <a href="#" class="download-btn" id="downloadBed" download="output.bed">⬇️ Download BED File</a>
+            <a href="#" class="download-btn" id="downloadLog" download="output_log.txt">⬇️ Download Log</a>
+            <div class="log-preview" id="logPreview"></div>
+        </div>
+    </div>
+
+    <script>
+        let gtfFileData = null;
+        let geneListData = null;
+
+        // File upload handlers
+        document.getElementById('gtfFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('gtfFileName').textContent = `✓ ${file.name}`;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    gtfFileData = event.target.result;
+                    checkFilesReady();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        document.getElementById('geneListFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('geneListFileName').textContent = `✓ ${file.name}`;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    geneListData = event.target.result;
+                    checkFilesReady();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function checkFilesReady() {
+            if (gtfFileData && geneListData) {
+                document.getElementById('processBtn').disabled = false;
+            }
+        }
+
+        // Main processing
+        document.getElementById('processBtn').addEventListener('click', processFiles);
+
+        function processFiles() {
+            const startTime = performance.now();
+            
+            showStatus('Processing files...', 'processing');
+            document.getElementById('results').style.display = 'none';
+            
+            // Parse gene list
+            const geneList = geneListData.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+            
+            const geneListLower = new Set(geneList.map(g => g.toLowerCase()));
+            const lowerToOriginal = {};
+            geneList.forEach(gene => {
+                lowerToOriginal[gene.toLowerCase()] = gene;
+            });
+            
+            // Parse GTF
+            const geneData = {};
+            const gtfLines = gtfFileData.split('\n');
+            let gtfLinesProcessed = 0;
+            
+            for (const line of gtfLines) {
+                if (!line || line.startsWith('#')) continue;
+                
+                gtfLinesProcessed++;
+                
+                const parts = line.split('\t');
+                if (parts.length < 9) continue;
+                
+                const chrom = parts[0];
+                const start = parseInt(parts[3]);
+                const end = parseInt(parts[4]);
+                const attributes = parts[8];
+                
+                const geneName = extractGeneName(attributes);
+                if (!geneName) continue;
+                
+                const geneNameLower = geneName.toLowerCase();
+                
+                if (geneListLower.has(geneNameLower)) {
+                    if (!geneData[geneNameLower]) {
+                        geneData[geneNameLower] = {
+                            chromosome: chrom,
+                            minPos: start,
+                            maxPos: end,
+                            exactName: geneName
+                        };
+                    } else {
+                        geneData[geneNameLower].minPos = Math.min(geneData[geneNameLower].minPos, start);
+                        geneData[geneNameLower].maxPos = Math.max(geneData[geneNameLower].maxPos, end);
+                    }
+                }
+            }
+            
+            // Generate BED output
+            let bedOutput = '';
+            const sortedGenes = Object.keys(geneData).sort();
+            for (const geneLower of sortedGenes) {
+                const info = geneData[geneLower];
+                bedOutput += `${info.chromosome}\t${info.minPos}\t${info.maxPos}\t${info.exactName}\n`;
+            }
+            
+            // Find genes not found
+            const notFound = [];
+            for (const gene of geneList) {
+                if (!geneData[gene.toLowerCase()]) {
+                    notFound.push(gene);
+                }
+            }
+            
+            const endTime = performance.now();
+            const duration = Math.round(endTime - startTime);
+            
+            // Generate log
+            let logOutput = `GTF Gene Extractor - Summary Report\n`;
+            logOutput += `====================================\n\n`;
+            logOutput += `Processing Statistics:\n`;
+            logOutput += `  GTF lines processed: ${gtfLinesProcessed}\n`;
+            logOutput += `  Genes in input list: ${geneList.length}\n`;
+            logOutput += `  Genes found in GTF: ${Object.keys(geneData).length}\n`;
+            logOutput += `  Genes not found: ${notFound.length}\n`;
+            logOutput += `  Execution time: ${duration} ms\n\n`;
+            
+            if (notFound.length > 0) {
+                logOutput += `Genes Not Found in GTF:\n`;
+                logOutput += `-----------------------\n`;
+                notFound.forEach(gene => {
+                    logOutput += `  ${gene}\n`;
+                });
+            } else {
+                logOutput += `All genes from the input list were found in the GTF file.\n`;
+            }
+            
+            logOutput += `\nGenes Successfully Extracted:\n`;
+            logOutput += `-----------------------------\n`;
+            for (const geneLower of sortedGenes) {
+                const info = geneData[geneLower];
+                logOutput += `  ${info.exactName} (${info.chromosome}:${info.minPos}-${info.maxPos})\n`;
+            }
+            
+            // Create download links
+            const bedBlob = new Blob([bedOutput], { type: 'text/plain' });
+            const logBlob = new Blob([logOutput], { type: 'text/plain' });
+            
+            const bedUrl = URL.createObjectURL(bedBlob);
+            const logUrl = URL.createObjectURL(logBlob);
+            
+            document.getElementById('downloadBed').href = bedUrl;
+            document.getElementById('downloadLog').href = logUrl;
+            document.getElementById('logPreview').textContent = logOutput;
+            
+            showStatus(`✓ Processing complete! Found ${Object.keys(geneData).length} out of ${geneList.length} genes.`, 'success');
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function extractGeneName(attributes) {
+            // Look for gene_name "XXX" pattern
+            let match = attributes.match(/gene_name\s+"([^"]+)"/);
+            if (match) return match[1];
+            
+            // Try gene_id if gene_name not found
+            match = attributes.match(/gene_id\s+"([^"]+)"/);
+            if (match) return match[1];
+            
+            return '';
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
