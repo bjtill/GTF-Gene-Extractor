@@ -4,15 +4,15 @@ ________________________________________________________________________________
 
 Use at your own risk. I cannot provide support. All information obtained/inferred with this code is without any implied warranty of fitness for any purpose or use whatsoever.
 
-ABOUT: 
+**ABOUT** 
 
 This program generates a downloadable BED file for a list of genes based on information within a genome annotation GTF file.  The program searches for gene names in a case-insensitive manner, but having an exact match.  For example if the gene actin is provided, it will generate a bed file for actin or ACTIN, but not actin-like.  The input gene list should contain one gene per line.  The program will report the smallest and largest nucleotide positions within the GTF file that are associated with the name.  Names that are not found in the GTF file are reported in a downloadable log file.  
 
-RATIONAL: 
+**RATIONAL** 
 
-Extracting genomic coordinates from a genome build has potentially many uses. While relatively simple to achieve, this web-tool automates the process, supports evaluation of many genes, and provides information on genes not discovered.  The tool was originally built for in-house whole genome sequence analysis pipelines and as an input to the BLAST-based Genome coordinate Converter (a cross-genome all-purpose tool similar to liftover). A link to this converter will be added shortly. 
+Extracting genomic coordinates from a genome build has potentially many uses. While relatively simple to achieve, this web-tool automates the process, supports evaluation of many genes, and provides information on genes not discovered.  The tool was originally built for in-house whole genome sequence analysis pipelines and as an input to the BLAST-based Genome coordinate Converter (a cross-genome all-purpose tool similar to liftover, found here: https://github.com/bjtill/BLAST-based-Genome-Coordinate-Converter ). 
 
-SCREENSHOTS:  
+**SCREENSHOTS**  
 
 Input files
 
